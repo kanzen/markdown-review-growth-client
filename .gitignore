@@ -1,0 +1,9 @@
+# dependencies
+node_modules/
+
+# dist/ is committed on purpose: this repo's CI can only publish the
+# artifact, not build it — the build needs ../src from a nested checkout
+# inside the service repo (markdown-review-growth-nextjs).
+
+# typescript
+*.tsbuildinfo
