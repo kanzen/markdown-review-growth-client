@@ -1,0 +1,18 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  release:
+    name: 'Release'
+    uses: technology-studio/github-workflows/.github/workflows/_release-bun.yml@main
+    secrets:
+      SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.KAN_SEMANTIC_RELEASE_SLACK_WEBHOOK }}
+      TXO_SLACK_BOT_APP_TOKEN: ${{ secrets.KAN_SLACK_BOT_APP_TOKEN }}
+      TXO_SLACK_GITHUB_OPS_CHANNEL_ID: ${{ secrets.KAN_SLACK_GITHUB_OPS_CHANNEL_ID }}

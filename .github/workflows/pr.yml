@@ -1,0 +1,19 @@
+name: 'PR'
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  semantic-title:
+    name: 'Semantic title'
+    uses: technology-studio/github-workflows/.github/workflows/_semantic-title.yml@main
+    secrets:
+      TXO_SLACK_BOT_APP_TOKEN: ${{ secrets.KAN_SLACK_BOT_APP_TOKEN }}
+      TXO_SLACK_GITHUB_OPS_CHANNEL_ID: ${{ secrets.KAN_SLACK_GITHUB_OPS_CHANNEL_ID }}
