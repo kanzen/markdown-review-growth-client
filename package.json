@@ -2,6 +2,10 @@
   "name": "@kanzen/markdown-review-growth-client",
   "version": "0.0.0-development",
   "description": "Typed, fire-and-forget client for the kanzen growth service.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanzen/markdown-review-growth-client.git"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
