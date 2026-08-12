@@ -1,7 +1,7 @@
 {
   "name": "@kanzen/markdown-review-growth-client",
   "version": "0.0.0-development",
-  "description": "Typed, fire-and-forget client for the kanzen growth service.",
+  "description": "Server-only, write-before-success client for the markdown-review growth service.",
   "repository": {
     "type": "git",
     "url": "https://github.com/kanzen/markdown-review-growth-client.git"
@@ -30,8 +30,7 @@
   },
   "dependencies": {
     "@trpc/client": "^11.18.0",
-    "@trpc/server": "^11.18.0",
-    "zod": "^4.4.3"
+    "@trpc/server": "^11.18.0"
   },
   "devDependencies": {
     "@txo/semantic-release": "^2.1.1",
