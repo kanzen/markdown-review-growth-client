@@ -46,7 +46,8 @@ export type GrowthServiceClientOptions = {
 	/**
 	 * The shared ingest credential (AD-ingest-auth), sent as a bearer token
 	 * on every call. Provisioned as `INGEST_SHARED_SECRET` on the service and
-	 * under the consumer's own env name on the product.
+	 * under the consumer's own env name on the product
+	 * (`MARKDOWN_REVIEW_GROWTH_INGEST_SECRET`).
 	 */
 	secret: string;
 	/** Service origin; defaults to the production deployment. */

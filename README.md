@@ -15,7 +15,7 @@ ingestion is idempotent on a client-generated event ID.
 // once, at server startup:
 configureGrowthService({
   app: "markdown-review", // client-side label — never sent on the wire
-  secret: process.env.GROWTH_INGEST_SECRET, // the shared ingest credential
+  secret: process.env.MARKDOWN_REVIEW_GROWTH_INGEST_SECRET, // the shared ingest credential
 });
 
 // inside the request that changes state — awaited, and its failure

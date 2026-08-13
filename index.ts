@@ -6,7 +6,10 @@
 // SDK for product code.
 //
 //   // once, at server startup:
-//   configureGrowthService({ app: "markdown-review", secret: env.GROWTH_INGEST_SECRET });
+//   configureGrowthService({
+//     app: "markdown-review",
+//     secret: env.MARKDOWN_REVIEW_GROWTH_INGEST_SECRET,
+//   });
 //   // inside the request that changes state — awaited, and its failure
 //   // fails the request (write-before-success, PRD FR-event-ingestion):
 //   await ingestEvent({
