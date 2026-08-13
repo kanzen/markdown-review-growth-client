@@ -13,10 +13,20 @@ ingestion is idempotent on a client-generated event ID.
 
 ```ts
 // once, at server startup:
-configureGrowthService({ app: "markdown-review" });
+configureGrowthService({
+  app: "markdown-review", // client-side label — never sent on the wire
+  secret: process.env.GROWTH_INGEST_SECRET, // the shared ingest credential
+});
 
-// inside the request that changes state:
-await ping(); // the ingest calls replace this surface in P-event-pipeline
+// inside the request that changes state — awaited, and its failure
+// fails the request (write-before-success):
+await ingestEvent({
+  eventId,             // caller-generated uuid; retries reuse it
+  name: "comment_created",
+  userId,              // the pseudonymous internal user id
+  occurredAt: new Date().toISOString(),
+  properties: { pr_hash: prHash },
+});
 ```
 
 No React, no browser entry point, no queue.

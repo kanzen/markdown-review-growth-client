@@ -6,20 +6,26 @@
 // SDK for product code.
 //
 //   // once, at server startup:
-//   configureGrowthService({ app: "markdown-review" });
+//   configureGrowthService({ app: "markdown-review", secret: env.GROWTH_INGEST_SECRET });
 //   // inside the request that changes state — awaited, and its failure
 //   // fails the request (write-before-success, PRD FR-event-ingestion):
-//   await ping();
-//
-// The ingest calls for the 11 product-reported mirrored events replace
-// `ping` as the working surface in P-event-pipeline (KAN-712).
+//   await ingestEvent({
+//     eventId,             // caller-generated uuid; retries reuse it
+//     name: "comment_created",
+//     userId,              // the pseudonymous internal user id
+//     occurredAt: new Date().toISOString(),
+//     properties: { pr_hash: prHash },
+//   });
 
 export type { AppRouter } from "../src/server/router";
 export {
   configureGrowthService,
   createGrowthServiceClient,
   getGrowthServiceClient,
+  ingestEvent,
   ping,
   type GrowthServiceClient,
   type GrowthServiceClientOptions,
+  type IngestEventInput,
+  type IngestEventResult,
 } from "./client";

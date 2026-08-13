@@ -13,16 +13,30 @@
 // client-generated event ID (AD-ingest-idempotency).
 
 import { createTRPCClient, httpLink, type TRPCClient } from "@trpc/client";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
 import type { AppRouter } from "../src/server/router";
 
+// The ingest contract, inferred from the deployed router so it cannot drift
+// (SAD-client-package). The envelope's `eventId` is generated and owned by
+// the caller: a retry must reuse the same id so the duplicate write stays a
+// no-op (AD-ingest-idempotency).
+export type IngestEventInput = inferRouterInputs<AppRouter>["ingestEvent"];
+export type IngestEventResult = inferRouterOutputs<AppRouter>["ingestEvent"];
+
 export type GrowthServiceClientOptions = {
   /**
-   * The consumer product's app id, e.g. "markdown-review". Stored at
-   * configure time; the ingest procedures of P-event-pipeline send it on
-   * every call.
+   * The consumer product's app id, e.g. "markdown-review". A client-side
+   * label only (decided 2026-08-13): it is not sent on ingest calls — the
+   * route identifies its caller by the credential (AD-ingest-auth).
    */
   app: string;
+  /**
+   * The shared ingest credential (AD-ingest-auth), sent as a bearer token
+   * on every call. Provisioned as `INGEST_SHARED_SECRET` on the service and
+   * under the consumer's own env name on the product.
+   */
+  secret: string;
   /** Service origin; defaults to the production deployment. */
   serviceOrigin?: string;
   /**
@@ -31,19 +45,24 @@ export type GrowthServiceClientOptions = {
    * staging deployments (SAD-client-package).
    */
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-  // How the product's server authenticates its calls is still open
-  // (architecture OQ-consumer-auth); the credential option lands here with
-  // the ingest procedures.
 };
 
 export type GrowthServiceClient = {
-  /** The configured consumer app id, sent with every ingest call. */
+  /** The configured consumer app id (a label — never sent on the wire). */
   app: string;
   /**
-   * Liveness check against the deployed service — the end-to-end proof of
-   * the generated contract at P-scaffold. Awaited; throws on any failure.
+   * Liveness check against the deployed service. Awaited; throws on any
+   * failure.
    */
   ping: () => Promise<{ ok: true; service: "markdown-review-growth" }>;
+  /**
+   * Mirror one product-reported event (PRD FR-event-ingestion) — the
+   * working surface of this package. Awaited within the product request
+   * that carries the state change; throws on any failure
+   * (write-before-success). `persisted: false` means the event was already
+   * recorded — a retry or latch duplicate, not an error.
+   */
+  ingestEvent: (input: IngestEventInput) => Promise<IngestEventResult>;
   /** The underlying typed tRPC client, for procedures this wrapper doesn't cover. */
   trpc: TRPCClient<AppRouter>;
 };
@@ -59,6 +78,7 @@ export function createGrowthServiceClient(
     links: [
       httpLink({
         url: `${origin}/api/trpc`,
+        headers: () => ({ authorization: `Bearer ${options.secret}` }),
         fetch: options.fetch,
       }),
     ],
@@ -67,6 +87,7 @@ export function createGrowthServiceClient(
   return {
     app: options.app,
     ping: () => trpc.ping.query(),
+    ingestEvent: (input) => trpc.ingestEvent.mutate(input),
     trpc,
   };
 }
@@ -90,4 +111,9 @@ export function getGrowthServiceClient(): GrowthServiceClient {
 /** Bare-call form of `GrowthServiceClient.ping` on the configured singleton. */
 export function ping(): Promise<{ ok: true; service: "markdown-review-growth" }> {
   return getGrowthServiceClient().ping();
+}
+
+/** Bare-call form of `GrowthServiceClient.ingestEvent` on the configured singleton. */
+export function ingestEvent(input: IngestEventInput): Promise<IngestEventResult> {
+  return getGrowthServiceClient().ingestEvent(input);
 }
