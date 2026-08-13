@@ -7,6 +7,7 @@ function createGrowthServiceClient(options) {
     links: [
       httpLink({
         url: `${origin}/api/trpc`,
+        headers: () => ({ authorization: `Bearer ${options.secret}` }),
         fetch: options.fetch
       })
     ]
@@ -14,6 +15,7 @@ function createGrowthServiceClient(options) {
   return {
     app: options.app,
     ping: () => trpc.ping.query(),
+    ingestEvent: (input) => trpc.ingestEvent.mutate(input),
     trpc
   };
 }
@@ -30,8 +32,12 @@ function getGrowthServiceClient() {
 function ping() {
   return getGrowthServiceClient().ping();
 }
+function ingestEvent(input) {
+  return getGrowthServiceClient().ingestEvent(input);
+}
 export {
   ping,
+  ingestEvent,
   getGrowthServiceClient,
   createGrowthServiceClient,
   configureGrowthService

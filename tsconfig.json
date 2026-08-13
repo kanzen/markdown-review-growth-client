@@ -6,7 +6,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    // The service's `@/` alias (SAD-nested-client-repo: the build imports
+    // the real ../src router, whose closure uses it).
+    "paths": {
+      "@/*": ["../src/*"]
+    }
   },
   "include": ["index.ts", "client.ts"]
 }
