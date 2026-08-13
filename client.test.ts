@@ -14,7 +14,7 @@ const SECRET = "test-ingest-secret";
 beforeAll(() => {
   // serviceProcedure reads the secret lazily per call (AD-ingest-auth), so
   // setting it here is enough for the in-process dispatch below.
-  process.env.INGEST_SHARED_SECRET = SECRET;
+  process.env.MARKDOWN_REVIEW_GROWTH_INGEST_SECRET = SECRET;
 });
 
 // In-process "deployment": the client's fetch dispatches straight into the
