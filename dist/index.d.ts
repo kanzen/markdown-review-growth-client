@@ -25,6 +25,10 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 			userId: string;
 			occurredAt: string;
 			properties?: Record<string, unknown> | undefined;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
 		};
 		output: {
 			persisted: boolean;
