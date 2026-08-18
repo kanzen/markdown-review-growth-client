@@ -25,11 +25,46 @@ await ingestEvent({
   name: "comment_created",
   userId,              // the pseudonymous internal user id
   occurredAt: new Date().toISOString(),
-  properties: { pr_hash: prHash },
+  properties: { pr_hash: prHash }, // typed per `name` — see below
 });
 ```
 
 No React, no browser entry point, no queue.
+
+## The contract is typed per event
+
+The ingest input is a **discriminated union on `name`**, one branch per
+event the service accepts, each carrying that event's own `properties`
+shape — inlined from the service's event catalog at build time. A payload
+outside the catalog does not compile: an unknown name, a missing required
+property, or an undeclared one.
+
+```ts
+import type {
+  IngestEventInput,      // the whole union (envelope + name + properties)
+  IngestEventName,       // "signup_completed" | "comment_created" | …
+  IngestEventProperties, // IngestEventProperties<"comment_created"> → { pr_hash: string }
+} from "@kanzen/markdown-review-growth-client";
+
+// A producer derives its mirrored payload types from the package instead of
+// keeping an independent copy:
+type CommentCreated = IngestEventProperties<"comment_created">;
+const properties: CommentCreated = { pr_hash: prHash }; // ok
+// { }                                                    // error: pr_hash missing
+// { pr_hash: prHash, repo: "o/r" }                       // error: undeclared key
+```
+
+`properties` is required on every branch (`{}` for events without any). The
+service still validates every call at runtime against the same schema —
+unknown names are rejected, undeclared keys stripped — but the contract you
+program against is the type. Every catalog change is a service change, a new
+release of this package, and then a version bump in the producer, in that
+order.
+
+The result is `{ persisted: boolean }` — `persisted: false` means the event
+was already recorded (a retry or a latch duplicate), never an error. The
+earlier `droppedProperties` field is gone with v2: a typed producer cannot
+send undeclared keys, so there was nothing left to report.
 
 ## Development
 

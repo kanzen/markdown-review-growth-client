@@ -16,6 +16,8 @@ import {
   type GrowthServiceClient,
   type GrowthServiceClientOptions,
   type IngestEventInput,
+  type IngestEventName,
+  type IngestEventProperties,
   type IngestEventResult,
 } from "./dist/index";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -39,10 +41,41 @@ configureGrowthService({ app: "markdown-review" });
 
 const input: IngestEventInput = {
   eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d4",
+  name: "signup_completed",
+  userId: "user_123",
+  occurredAt: "2026-08-13T10:00:00.000Z",
+  properties: { acquisition_source: "show-hn" },
+};
+
+// The per-event contract (KAN-715): `properties` is typed by `name`, and the
+// helper types let a producer derive its payload types from this package.
+const name: IngestEventName = "comment_created";
+const commentProperties: IngestEventProperties<"comment_created"> = { pr_hash: "abc" };
+const bareProperties: IngestEventProperties<"trial_started"> = {};
+
+// @ts-expect-error — a name outside the service catalog must not compile
+const unknownName: IngestEventName = "landing_viewed";
+
+// @ts-expect-error — `properties` is required on every branch
+const missingProperties: IngestEventInput = {
+  eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d4",
   name: "comment_created",
   userId: "user_123",
   occurredAt: "2026-08-13T10:00:00.000Z",
 };
+
+// @ts-expect-error — `pr_hash` is required for comment_created
+const wrongProperties: IngestEventInput = {
+  eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d4",
+  name: "comment_created",
+  userId: "user_123",
+  occurredAt: "2026-08-13T10:00:00.000Z",
+  properties: {},
+};
+
+// @ts-expect-error — the result no longer reports droppedProperties (v2)
+const dropped: IngestEventResult = { persisted: true, droppedProperties: [] };
+const result: IngestEventResult = { persisted: false };
 
 const options: GrowthServiceClientOptions = {
   app: "markdown-review",
@@ -59,5 +92,13 @@ void output;
 void pinged;
 void ingested;
 void input;
+void name;
+void commentProperties;
+void bareProperties;
+void unknownName;
+void missingProperties;
+void wrongProperties;
+void dropped;
+void result;
 void client;
 void configured;

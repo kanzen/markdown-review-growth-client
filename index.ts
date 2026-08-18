@@ -17,8 +17,8 @@
 //     name: "comment_created",
 //     userId,              // the pseudonymous internal user id
 //     occurredAt: new Date().toISOString(),
-//     properties: { pr_hash: prHash },
-//   });
+//     properties: { pr_hash: prHash }, // typed per `name` — the service
+//   });                                // catalog is the contract (KAN-715)
 
 export type { AppRouter } from "../src/server/router";
 export {
@@ -30,5 +30,7 @@ export {
   type GrowthServiceClient,
   type GrowthServiceClientOptions,
   type IngestEventInput,
+  type IngestEventName,
+  type IngestEventProperties,
   type IngestEventResult,
 } from "./client";

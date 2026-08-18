@@ -20,11 +20,144 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 	}>;
 	ingestEvent: import("@trpc/server").TRPCMutationProcedure<{
 		input: {
+			name: "signup_completed";
+			properties: {
+				acquisition_source?: string | undefined;
+				campaign?: string | undefined;
+			};
 			eventId: string;
-			name: string;
 			userId: string;
 			occurredAt: string;
-			properties?: Record<string, unknown> | undefined;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "github_app_installed";
+			properties: {
+				organization_id: string;
+				owner_type: "user" | "organization";
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "real_pr_opened";
+			properties: {
+				pr_hash: string;
+				repository_hash: string;
+				repository_visibility: "public" | "private";
+				repository_owner_type: "user" | "organization";
+				number_of_markdown_files: number;
+				number_of_sections: number;
+				contains_mermaid: boolean;
+				contains_tables: boolean;
+				organization_id?: string | undefined;
+				github_app_or_pat?: "github_app" | "pat" | undefined;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "section_reviewed";
+			properties: {
+				pr_hash: string;
+				milestone: 1 | 3 | 11;
+				sections_marked: number;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "review_completed";
+			properties: {
+				pr_hash: string;
+				sections_marked: number;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "comment_created";
+			properties: {
+				pr_hash: string;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "shared_link_opened";
+			properties: {
+				pr_hash: string;
+				acquisition_source?: string | undefined;
+				campaign?: string | undefined;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "trial_started";
+			properties: Record<string, never>;
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "subscription_started";
+			properties: Record<string, never>;
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "subscription_cancelled";
+			properties: Record<string, never>;
+			eventId: string;
+			userId: string;
+			occurredAt: string;
+			context?: {
+				userAgent?: string | undefined;
+				country?: string | undefined;
+			} | undefined;
+		} | {
+			name: "feedback_submitted";
+			properties: {
+				feedback_source: "survey" | "exit_survey";
+				text: string;
+			};
+			eventId: string;
+			userId: string;
+			occurredAt: string;
 			context?: {
 				userAgent?: string | undefined;
 				country?: string | undefined;
@@ -32,7 +165,6 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 		};
 		output: {
 			persisted: boolean;
-			droppedProperties: string[];
 		};
 		meta: object;
 	}>;
@@ -40,6 +172,17 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 export type AppRouter = typeof appRouter;
 export type IngestEventInput = inferRouterInputs<AppRouter>["ingestEvent"];
 export type IngestEventResult = inferRouterOutputs<AppRouter>["ingestEvent"];
+/** The event names the service accepts — the mirrored, product-reported events. */
+export type IngestEventName = IngestEventInput["name"];
+/**
+ * The property shape of one accepted event, e.g.
+ * `IngestEventProperties<"comment_created">` is `{ pr_hash: string }`. The
+ * product's tracking module derives its mirrored payload types from this
+ * instead of keeping an independent copy.
+ */
+export type IngestEventProperties<N extends IngestEventName> = Extract<IngestEventInput, {
+	name: N;
+}>["properties"];
 export type GrowthServiceClientOptions = {
 	/**
 	 * The consumer product's app id, e.g. "markdown-review". A client-side
@@ -77,8 +220,10 @@ export type GrowthServiceClient = {
 	 * Mirror one product-reported event (PRD FR-event-ingestion) — the
 	 * working surface of this package. Awaited within the product request
 	 * that carries the state change; throws on any failure
-	 * (write-before-success). `persisted: false` means the event was already
-	 * recorded — a retry or latch duplicate, not an error.
+	 * (write-before-success). `properties` is typed per `name`, so a payload
+	 * outside the service's catalog does not compile. `persisted: false`
+	 * means the event was already recorded — a retry or latch duplicate, not
+	 * an error.
 	 */
 	ingestEvent: (input: IngestEventInput) => Promise<IngestEventResult>;
 	/** The underlying typed tRPC client, for procedures this wrapper doesn't cover. */

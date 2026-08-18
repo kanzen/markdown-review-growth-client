@@ -18,11 +18,28 @@ import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../src/server/router";
 
 // The ingest contract, inferred from the deployed router so it cannot drift
-// (SAD-client-package). The envelope's `eventId` is generated and owned by
-// the caller: a retry must reuse the same id so the duplicate write stays a
-// no-op (AD-ingest-idempotency).
+// (SAD-client-package). Since v2 (KAN-715) the input is a discriminated
+// union on `name`, one branch per accepted event with that event's own
+// `properties` shape — the service's catalog is the contract, and this
+// package is how producers consume it at compile time. The envelope's
+// `eventId` is generated and owned by the caller: a retry must reuse the
+// same id so the duplicate write stays a no-op (AD-ingest-idempotency).
 export type IngestEventInput = inferRouterInputs<AppRouter>["ingestEvent"];
 export type IngestEventResult = inferRouterOutputs<AppRouter>["ingestEvent"];
+
+/** The event names the service accepts — the mirrored, product-reported events. */
+export type IngestEventName = IngestEventInput["name"];
+
+/**
+ * The property shape of one accepted event, e.g.
+ * `IngestEventProperties<"comment_created">` is `{ pr_hash: string }`. The
+ * product's tracking module derives its mirrored payload types from this
+ * instead of keeping an independent copy.
+ */
+export type IngestEventProperties<N extends IngestEventName> = Extract<
+  IngestEventInput,
+  { name: N }
+>["properties"];
 
 export type GrowthServiceClientOptions = {
   /**
@@ -59,8 +76,10 @@ export type GrowthServiceClient = {
    * Mirror one product-reported event (PRD FR-event-ingestion) — the
    * working surface of this package. Awaited within the product request
    * that carries the state change; throws on any failure
-   * (write-before-success). `persisted: false` means the event was already
-   * recorded — a retry or latch duplicate, not an error.
+   * (write-before-success). `properties` is typed per `name`, so a payload
+   * outside the service's catalog does not compile. `persisted: false`
+   * means the event was already recorded — a retry or latch duplicate, not
+   * an error.
    */
   ingestEvent: (input: IngestEventInput) => Promise<IngestEventResult>;
   /** The underlying typed tRPC client, for procedures this wrapper doesn't cover. */
