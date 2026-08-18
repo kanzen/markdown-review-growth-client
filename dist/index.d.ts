@@ -51,13 +51,13 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 				pr_hash: string;
 				repository_hash: string;
 				repository_visibility: "public" | "private";
+				repository_owner_type: "user" | "organization";
+				number_of_markdown_files: number;
+				number_of_sections: number;
+				contains_mermaid: boolean;
+				contains_tables: boolean;
 				organization_id?: string | undefined;
-				repository_owner_type?: "user" | "organization" | undefined;
 				github_app_or_pat?: "github_app" | "pat" | undefined;
-				number_of_markdown_files?: number | undefined;
-				number_of_sections?: number | undefined;
-				contains_mermaid?: boolean | undefined;
-				contains_tables?: boolean | undefined;
 			};
 			eventId: string;
 			userId: string;
