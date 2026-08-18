@@ -7,7 +7,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "../src/server/router";
 import { createServiceContext } from "../src/server/trpc";
 
-import { createGrowthServiceClient } from "./client";
+import { createGrowthServiceClient, type IngestEventInput } from "./client";
 
 const SECRET = "test-ingest-secret";
 
@@ -71,14 +71,17 @@ describe("createGrowthServiceClient", () => {
   });
 
   test("ingestEvent rejects unknown event names through the wire (FR-ingest-validation)", () => {
-    expect(
-      testClient(SECRET).ingestEvent({
-        eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d5",
-        name: "made_up_event",
-        userId: "user_123",
-        occurredAt: "2026-08-13T10:00:00.000Z",
-        properties: {},
-      }),
-    ).rejects.toThrow(/Unknown event name/);
+    // Uncompilable through the typed surface (the union is the contract,
+    // KAN-715) — cast to prove the route still rejects an untyped caller.
+    const untyped = {
+      eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d5",
+      name: "made_up_event",
+      userId: "user_123",
+      occurredAt: "2026-08-13T10:00:00.000Z",
+      properties: {},
+    } as unknown as IngestEventInput;
+    expect(testClient(SECRET).ingestEvent(untyped)).rejects.toThrow(
+      /BAD_REQUEST|Invalid input|invalid_union/,
+    );
   });
 });
