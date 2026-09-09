@@ -36,9 +36,9 @@ function ingestEvent(input) {
   return getGrowthServiceClient().ingestEvent(input);
 }
 export {
-  ping,
-  ingestEvent,
-  getGrowthServiceClient,
+  configureGrowthService,
   createGrowthServiceClient,
-  configureGrowthService
+  getGrowthServiceClient,
+  ingestEvent,
+  ping
 };
