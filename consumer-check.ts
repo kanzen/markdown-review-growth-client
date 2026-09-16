@@ -51,7 +51,8 @@ const input: IngestEventInput = {
 // helper types let a producer derive its payload types from this package.
 const name: IngestEventName = "comment_created";
 const commentProperties: IngestEventProperties<"comment_created"> = { pr_hash: "abc" };
-const bareProperties: IngestEventProperties<"trial_started"> = {};
+// @ts-expect-error — the subscription events left the ingest union (v3): the service originates them from the Clerk Billing webhook, so a producer cannot name them
+const subscriptionName: IngestEventName = "trial_started";
 
 // @ts-expect-error — a name outside the service catalog must not compile
 const unknownName: IngestEventName = "landing_viewed";
@@ -94,7 +95,7 @@ void ingested;
 void input;
 void name;
 void commentProperties;
-void bareProperties;
+void subscriptionName;
 void unknownName;
 void missingProperties;
 void wrongProperties;

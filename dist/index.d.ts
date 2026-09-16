@@ -120,36 +120,6 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 				country?: string | undefined;
 			} | undefined;
 		} | {
-			name: "trial_started";
-			properties: Record<string, never>;
-			eventId: string;
-			userId: string;
-			occurredAt: string;
-			context?: {
-				userAgent?: string | undefined;
-				country?: string | undefined;
-			} | undefined;
-		} | {
-			name: "subscription_started";
-			properties: Record<string, never>;
-			eventId: string;
-			userId: string;
-			occurredAt: string;
-			context?: {
-				userAgent?: string | undefined;
-				country?: string | undefined;
-			} | undefined;
-		} | {
-			name: "subscription_cancelled";
-			properties: Record<string, never>;
-			eventId: string;
-			userId: string;
-			occurredAt: string;
-			context?: {
-				userAgent?: string | undefined;
-				country?: string | undefined;
-			} | undefined;
-		} | {
 			name: "feedback_submitted";
 			properties: {
 				feedback_source: "survey" | "exit_survey";

@@ -7,6 +7,10 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
+    // The router's import closure reaches the lifecycle email templates
+    // (React Email .tsx) since KAN-630; module resolution needs a JSX mode
+    // even though nothing here is emitted from them.
+    "jsx": "react-jsx",
     // The service's `@/` alias (SAD-nested-client-repo: the build imports
     // the real ../src router, whose closure uses it).
     "paths": {
