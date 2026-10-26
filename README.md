@@ -42,7 +42,7 @@ property, or an undeclared one.
 ```ts
 import type {
   IngestEventInput,      // the whole union (envelope + name + properties)
-  IngestEventName,       // "signup_completed" | "comment_created" | …
+  IngestEventName,       // "signin_completed" | "comment_created" | …
   IngestEventProperties, // IngestEventProperties<"comment_created"> → { pr_hash: string }
 } from "@kanzen/markdown-review-growth-client";
 
