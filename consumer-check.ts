@@ -54,7 +54,7 @@ const commentProperties: IngestEventProperties<"comment_created"> = { pr_hash: "
 // @ts-expect-error — the subscription events left the ingest union (v3): the service originates them from the Clerk Billing webhook, so a producer cannot name them
 const subscriptionName: IngestEventName = "trial_started";
 
-// @ts-expect-error — signup_completed left the ingest union (v4, KAN-953): the service derives it from the account's first signin_completed
+// @ts-expect-error — signup_completed left the ingest union (v4, KAN-953): it is retired, and the account's first signin_completed is the sign-up
 const signupName: IngestEventName = "signup_completed";
 
 // @ts-expect-error — a name outside the service catalog must not compile
