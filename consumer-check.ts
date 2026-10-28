@@ -41,7 +41,7 @@ configureGrowthService({ app: "markdown-review" });
 
 const input: IngestEventInput = {
   eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d4",
-  name: "signup_completed",
+  name: "signin_completed",
   userId: "user_123",
   occurredAt: "2026-08-13T10:00:00.000Z",
   properties: { acquisition_source: "show-hn" },
@@ -53,6 +53,9 @@ const name: IngestEventName = "comment_created";
 const commentProperties: IngestEventProperties<"comment_created"> = { pr_hash: "abc" };
 // @ts-expect-error — the subscription events left the ingest union (v3): the service originates them from the Clerk Billing webhook, so a producer cannot name them
 const subscriptionName: IngestEventName = "trial_started";
+
+// @ts-expect-error — signup_completed left the ingest union (v4, KAN-953): it is retired, and the account's first signin_completed is the sign-up
+const signupName: IngestEventName = "signup_completed";
 
 // @ts-expect-error — a name outside the service catalog must not compile
 const unknownName: IngestEventName = "landing_viewed";
