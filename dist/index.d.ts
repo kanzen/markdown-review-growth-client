@@ -20,7 +20,7 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 	}>;
 	ingestEvent: import("@trpc/server").TRPCMutationProcedure<{
 		input: {
-			name: "signin_completed";
+			name: "first_signin_completed";
 			properties: {
 				acquisition_source?: string | undefined;
 				campaign?: string | undefined;
