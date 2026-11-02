@@ -41,7 +41,7 @@ configureGrowthService({ app: "markdown-review" });
 
 const input: IngestEventInput = {
   eventId: "7f0d34a2-6f2e-4a2b-9a44-0f6de1b2c3d4",
-  name: "signin_completed",
+  name: "first_signin_completed",
   userId: "user_123",
   occurredAt: "2026-08-13T10:00:00.000Z",
   properties: { acquisition_source: "show-hn" },
@@ -54,8 +54,11 @@ const commentProperties: IngestEventProperties<"comment_created"> = { pr_hash: "
 // @ts-expect-error — the subscription events left the ingest union (v3): the service originates them from the Clerk Billing webhook, so a producer cannot name them
 const subscriptionName: IngestEventName = "trial_started";
 
-// @ts-expect-error — signup_completed left the ingest union (v4, KAN-953): it is retired, and the account's first signin_completed is the sign-up
+// @ts-expect-error — signup_completed left the ingest union (v4, KAN-953): it is retired, and first_signin_completed is the sign-up
 const signupName: IngestEventName = "signup_completed";
+
+// @ts-expect-error — signin_completed left the ingest union (v5, KAN-953): later sign-ins are recorded nowhere, and first_signin_completed is the sign-up
+const signinName: IngestEventName = "signin_completed";
 
 // @ts-expect-error — a name outside the service catalog must not compile
 const unknownName: IngestEventName = "landing_viewed";
@@ -77,9 +80,17 @@ const wrongProperties: IngestEventInput = {
   properties: {},
 };
 
+// The ingest call answers nothing (v5, KAN-953): the result is exactly `void`.
+type Equals<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const resultIsVoid: Equals<IngestEventResult, void> = true;
+const result: IngestEventResult = undefined;
+
+// @ts-expect-error — the result no longer reports persisted (v5, KAN-953)
+const persistedResult: IngestEventResult = { persisted: false };
+
 // @ts-expect-error — the result no longer reports droppedProperties (v2)
 const dropped: IngestEventResult = { persisted: true, droppedProperties: [] };
-const result: IngestEventResult = { persisted: false };
 
 const options: GrowthServiceClientOptions = {
   app: "markdown-review",
@@ -99,10 +110,14 @@ void input;
 void name;
 void commentProperties;
 void subscriptionName;
+void signupName;
+void signinName;
 void unknownName;
 void missingProperties;
 void wrongProperties;
-void dropped;
+void resultIsVoid;
 void result;
+void persistedResult;
+void dropped;
 void client;
 void configured;

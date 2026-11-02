@@ -1,5 +1,5 @@
 import { TRPCClient } from '@trpc/client';
-import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
+import { inferProcedureOutput, inferRouterInputs } from '@trpc/server';
 
 export type ServiceContext = {
 	authorizationHeader: string | null;
@@ -20,7 +20,7 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 	}>;
 	ingestEvent: import("@trpc/server").TRPCMutationProcedure<{
 		input: {
-			name: "signin_completed";
+			name: "first_signin_completed";
 			properties: {
 				acquisition_source?: string | undefined;
 				campaign?: string | undefined;
@@ -133,15 +133,13 @@ declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
 				country?: string | undefined;
 			} | undefined;
 		};
-		output: {
-			persisted: boolean;
-		};
+		output: void;
 		meta: object;
 	}>;
 }>>;
 export type AppRouter = typeof appRouter;
 export type IngestEventInput = inferRouterInputs<AppRouter>["ingestEvent"];
-export type IngestEventResult = inferRouterOutputs<AppRouter>["ingestEvent"];
+export type IngestEventResult = inferProcedureOutput<AppRouter["ingestEvent"]>;
 /** The event names the service accepts — the mirrored, product-reported events. */
 export type IngestEventName = IngestEventInput["name"];
 /**
@@ -191,8 +189,9 @@ export type GrowthServiceClient = {
 	 * working surface of this package. Awaited within the product request
 	 * that carries the state change; throws on any failure
 	 * (write-before-success). `properties` is typed per `name`, so a payload
-	 * outside the service's catalog does not compile. `persisted: false`
-	 * means the event was already recorded — a retry or latch duplicate, not
+	 * outside the service's catalog does not compile. Resolves with nothing
+	 * (v5, KAN-953): resolving means the service acknowledged the write —
+	 * a new record, or a retry or duplicate that adds none, which is never
 	 * an error.
 	 */
 	ingestEvent: (input: IngestEventInput) => Promise<IngestEventResult>;
