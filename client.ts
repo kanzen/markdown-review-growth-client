@@ -13,7 +13,7 @@
 // client-generated event ID (AD-ingest-idempotency).
 
 import { createTRPCClient, httpLink, type TRPCClient } from "@trpc/client";
-import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import type { inferProcedureOutput, inferRouterInputs } from "@trpc/server";
 
 import type { AppRouter } from "../src/server/router";
 
@@ -25,7 +25,10 @@ import type { AppRouter } from "../src/server/router";
 // `eventId` is generated and owned by the caller: a retry must reuse the
 // same id so the duplicate write stays a no-op (AD-ingest-idempotency).
 export type IngestEventInput = inferRouterInputs<AppRouter>["ingestEvent"];
-export type IngestEventResult = inferRouterOutputs<AppRouter>["ingestEvent"];
+// Since v5 (KAN-953) the procedure answers nothing, so the result is `void`.
+// It is read from the procedure's own output: `inferRouterOutputs` applies
+// tRPC's JSON serialization, which turns a `void` output into `never`.
+export type IngestEventResult = inferProcedureOutput<AppRouter["ingestEvent"]>;
 
 /** The event names the service accepts — the mirrored, product-reported events. */
 export type IngestEventName = IngestEventInput["name"];
@@ -77,8 +80,9 @@ export type GrowthServiceClient = {
    * working surface of this package. Awaited within the product request
    * that carries the state change; throws on any failure
    * (write-before-success). `properties` is typed per `name`, so a payload
-   * outside the service's catalog does not compile. `persisted: false`
-   * means the event was already recorded — a retry or latch duplicate, not
+   * outside the service's catalog does not compile. Resolves with nothing
+   * (v5, KAN-953): resolving means the service acknowledged the write —
+   * a new record, or a retry or duplicate that adds none, which is never
    * an error.
    */
   ingestEvent: (input: IngestEventInput) => Promise<IngestEventResult>;

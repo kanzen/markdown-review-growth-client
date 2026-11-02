@@ -80,9 +80,17 @@ const wrongProperties: IngestEventInput = {
   properties: {},
 };
 
+// The ingest call answers nothing (v5, KAN-953): the result is exactly `void`.
+type Equals<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const resultIsVoid: Equals<IngestEventResult, void> = true;
+const result: IngestEventResult = undefined;
+
+// @ts-expect-error — the result no longer reports persisted (v5, KAN-953)
+const persistedResult: IngestEventResult = { persisted: false };
+
 // @ts-expect-error — the result no longer reports droppedProperties (v2)
 const dropped: IngestEventResult = { persisted: true, droppedProperties: [] };
-const result: IngestEventResult = { persisted: false };
 
 const options: GrowthServiceClientOptions = {
   app: "markdown-review",
@@ -107,7 +115,9 @@ void signinName;
 void unknownName;
 void missingProperties;
 void wrongProperties;
-void dropped;
+void resultIsVoid;
 void result;
+void persistedResult;
+void dropped;
 void client;
 void configured;

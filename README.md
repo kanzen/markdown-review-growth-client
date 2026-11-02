@@ -61,10 +61,13 @@ program against is the type. Every catalog change is a service change, a new
 release of this package, and then a version bump in the producer, in that
 order.
 
-The result is `{ persisted: boolean }` — `persisted: false` means the event
-was already recorded (a retry or a latch duplicate), never an error. The
-earlier `droppedProperties` field is gone with v2: a typed producer cannot
-send undeclared keys, so there was nothing left to report.
+The call resolves with nothing (`IngestEventResult` is `void` since v5):
+resolving means the service acknowledged the write, and a throw means it
+failed. A retry or a duplicate of an event already recorded resolves too —
+it is never an error — but the caller is not told which; the earlier
+`{ persisted }` result is gone with v5, and `droppedProperties` with v2 (a
+typed producer cannot send undeclared keys, so there was nothing left to
+report).
 
 ## Development
 
